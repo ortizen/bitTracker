@@ -10,8 +10,17 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String _currency = 'USD';
+  String _crypto = 'BTC';
+  String _conversion = '?';
+  CoinData data = CoinData();
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    getConversion(crypto: this._crypto, currency: this._currency);
     return Scaffold(
       appBar: AppBar(
         title: Text('🤑 Coin Ticker'),
@@ -31,8 +40,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = ? USD',
-                  textAlign: TextAlign.center,
+                  '1 $_crypto = $_conversion $_currency',
                   style: TextStyle(
                     fontSize: 20.0,
                     color: Colors.white,
@@ -91,5 +99,12 @@ class _PriceScreenState extends State<PriceScreen> {
       },
       children: pickerList,
     );
+  }
+
+  Future<void> getConversion({String currency, String crypto}) async {
+    var conversion = await data.getCoinData(crypto: crypto, fiat: currency);
+    setState(() {
+      this._conversion = conversion.toString();
+    });
   }
 }

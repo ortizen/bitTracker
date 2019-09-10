@@ -34,18 +34,23 @@ const List<String> cryptoList = [
 const String _url = 'https://apiv2.bitcoinaverage.com/indices/global/ticker/';
 
 class CoinData {
-  Future<String> getCoinData({String crypto, String fiat}) async {
-    String result;
-    String url = _url + crypto + fiat;
-    var data;
+  final String fiat;
+  final String currency;
+  String conversion;
+  CoinData({this.fiat, this.currency});
+
+  Future<void> getCoinData() async {
+    String url = _url + fiat + currency;
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body);
-      result = jsonResponse['last'].toString();
-      return result;
+      this.conversion = jsonResponse['last'].toString();
     } else {
       print(response.statusCode);
-      return null;
     }
+  }
+
+  String getConversion() {
+    return this.conversion;
   }
 }

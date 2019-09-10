@@ -1,3 +1,4 @@
+import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/material.dart';
 import 'coin_data.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,10 +10,10 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String _currency = 'USD';
-  String _crypto = 'BTC';
-  String _conversion = '?';
-  CoinData data = CoinData();
+  static String currency = 'USD';
+  static String crypto = 'BTC';
+  static String conversion = '?';
+  static List<CoinData> cryptos = [];
   @override
   void initState() {
     super.initState();
@@ -20,7 +21,6 @@ class _PriceScreenState extends State<PriceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    getConversion(crypto: this._crypto, currency: this._currency);
     return Scaffold(
       appBar: AppBar(
         title: Text('🤑 Coin Ticker'),
@@ -28,37 +28,46 @@ class _PriceScreenState extends State<PriceScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 $_crypto = $_conversion $_currency',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
+        children: getCards(),
+      ),
+    );
+  }
+
+  List<Widget> getCards() {
+    List<Widget> result = [];
+    for (crypto in cryptoList) {
+      cryptos.add(CoinData(currency: currency, fiat: crypto));
+      result.add(
+        Padding(
+          padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
+          child: Card(
+            color: Colors.lightBlueAccent,
+            elevation: 5.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+              child: Text(
+                getString(cryptos.last),
+                style: TextStyle(
+                  fontSize: 20.0,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
-          Container(
-            height: 150.0,
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
-            child: Platform.isIOS ? iOSPicker() : androidDropDown(),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
+    result.add(Container(
+      height: 150.0,
+      alignment: Alignment.center,
+      padding: EdgeInsets.only(bottom: 30.0),
+      color: Colors.lightBlue,
+      child: Platform.isIOS ? iOSPicker() : androidDropDown(),
+    ));
+    return result;
   }
 
   DropdownButton<String> androidDropDown() {
@@ -74,11 +83,11 @@ class _PriceScreenState extends State<PriceScreen> {
       );
     }
     return DropdownButton<String>(
-      value: _currency,
+      value: currency,
       items: curr,
       onChanged: (value) {
         setState(() {
-          _currency = value;
+          currency = value;
         });
       },
     );
@@ -94,17 +103,16 @@ class _PriceScreenState extends State<PriceScreen> {
       itemExtent: 32.0,
       onSelectedItemChanged: (selectdIndex) {
         setState(() {
-          _currency = currenciesList[selectdIndex];
+          currency = currenciesList[selectdIndex];
         });
       },
       children: pickerList,
     );
   }
 
-  Future<void> getConversion({String currency, String crypto}) async {
-    var conversion = await data.getCoinData(crypto: crypto, fiat: currency);
-    setState(() {
-      this._conversion = conversion.toString();
-    });
+  String getString(CoinData last) {
+    String conversion = last.getConversion();
+    String result = '1 ${last.fiat} = $conversion ${last.currency}';
+    return result;
   }
 }

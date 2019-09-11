@@ -1,27 +1,18 @@
-/* import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/material.dart';
-import 'coin_data.dart';
-import 'package:flutter/cupertino.dart';
-import 'dart:io' show Platform;
 import 'constants.dart';
+import 'coin_data.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/cupertino.dart';
 
-class PriceScreen extends StatefulWidget {
-  @override
-  _PriceScreenState createState() => _PriceScreenState();
-}
-
-class _PriceScreenState extends State<PriceScreen> {
-  static String currency = 'USD';
-  static String crypto = 'BTC';
-  static String conversion = '?';
-  static List<CoinData> cryptos = [];
-  @override
-  void initState() {
-    super.initState();
-  }
-
+class Screen extends StatelessWidget {
+  final List<CoinData> cryptos = [
+    CoinData('BTC', 'USD'),
+    CoinData('ETH', 'USD'),
+    CoinData('LTC', 'USD')
+  ];
   @override
   Widget build(BuildContext context) {
+    getConversions(cryptos);
     return Scaffold(
       appBar: AppBar(
         title: Text('🤑 Coin Ticker'),
@@ -29,15 +20,20 @@ class _PriceScreenState extends State<PriceScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: getCards(),
+        children: getCards(cryptos),
       ),
     );
   }
 
-  List<Widget> getCards() {
+  Future<void> getConversions(List<CoinData> cryptos) async {
+    for (CoinData crypto in cryptos) {
+      await crypto.setConversion();
+    }
+  }
+
+  List<Widget> getCards(List<CoinData> cryptos) {
     List<Widget> result = [];
-    for (crypto in cryptoList) {
-      cryptos.add(CoinData(currency: currency, fiat: crypto));
+    for (CoinData crypto in cryptos) {
       result.add(
         Padding(
           padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
@@ -50,7 +46,7 @@ class _PriceScreenState extends State<PriceScreen> {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
               child: Text(
-                getString(cryptos.last).toString(),
+                getString(crypto),
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.white,
@@ -66,12 +62,17 @@ class _PriceScreenState extends State<PriceScreen> {
       alignment: Alignment.center,
       padding: EdgeInsets.only(bottom: 30.0),
       color: Colors.lightBlue,
-      child: Platform.isIOS ? iOSPicker() : androidDropDown(),
+      child: Platform.isIOS ? iOSPicker(cryptos) : androidDropDown(cryptos),
     ));
     return result;
   }
 
-  DropdownButton<String> androidDropDown() {
+  String getString(CoinData crypto) {
+    return '1 ${crypto.getCrypto()} = ${crypto.getConversion()} ${crypto.getCurrency()}';
+  }
+
+  DropdownButton<String> androidDropDown(List<CoinData> cryptos) {
+    String currency;
     List<DropdownMenuItem<String>> curr = List<DropdownMenuItem<String>>();
     for (int i = 0; i < currenciesList.length; i++) {
       curr.add(
@@ -87,13 +88,17 @@ class _PriceScreenState extends State<PriceScreen> {
       value: currency,
       items: curr,
       onChanged: (value) {
-          currency = value;
-        
+        currency = value;
+        for (CoinData crypto in cryptos) {
+          crypto.setCurrency(currency);
+          crypto.getConversion();
+        }
       },
     );
   }
 
-  CupertinoPicker iOSPicker() {
+  CupertinoPicker iOSPicker(List<CoinData> cryptos) {
+    String currency;
     List<Text> pickerList = List<Text>();
     for (String currency in currenciesList) {
       pickerList.add(Text(currency));
@@ -102,18 +107,13 @@ class _PriceScreenState extends State<PriceScreen> {
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
       onSelectedItemChanged: (selectdIndex) {
-        setState(() {
-          currency = currenciesList[selectdIndex];
-        });
+        currency = currenciesList[selectdIndex];
+        for (CoinData crypto in cryptos) {
+          crypto.setCurrency(currency);
+          crypto.setConversion();
+        }
       },
       children: pickerList,
     );
   }
-
-  Future<String> getString(CoinData last) async {
-    String result;
-    await last.getCoinData().then((var s) => result = '1 ${last.fiat} = ${s.toString()} ${last.currency}');
-    
-  }
 }
- */

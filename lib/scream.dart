@@ -19,7 +19,7 @@ class _ScreamState extends State<Scream> {
   @override
   void initState() {
     super.initState();
-    getConversions(cryptos);
+    getConversions();
   }
 
   @override
@@ -31,18 +31,18 @@ class _ScreamState extends State<Scream> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: getCards(cryptos),
+        children: getCards(),
       ),
     );
   }
 
-  Future<void> getConversions(List<CoinData> cryptos) async {
+  Future<void> getConversions() async {
     for (CoinData crypto in cryptos) {
       await crypto.setConversion();
     }
   }
 
-  List<Widget> getCards(List<CoinData> cryptos) {
+  List<Widget> getCards() {
     List<Widget> result = [];
     for (CoinData crypto in cryptos) {
       result.add(
@@ -73,7 +73,7 @@ class _ScreamState extends State<Scream> {
       alignment: Alignment.center,
       padding: EdgeInsets.only(bottom: 30.0),
       color: Colors.lightBlue,
-      child: Platform.isIOS ? iOSPicker(cryptos) : androidDropDown(cryptos),
+      child: Platform.isIOS ? iOSPicker() : androidDropDown(),
     ));
     return result;
   }
@@ -82,7 +82,7 @@ class _ScreamState extends State<Scream> {
     return '1 ${crypto.getCrypto()} = ${crypto.getConversion()} ${crypto.getCurrency()}';
   }
 
-  DropdownButton<String> androidDropDown(List<CoinData> cryptos) {
+  DropdownButton<String> androidDropDown() {
     String currency;
     List<DropdownMenuItem<String>> curr = List<DropdownMenuItem<String>>();
     for (int i = 0; i < currenciesList.length; i++) {
@@ -108,7 +108,7 @@ class _ScreamState extends State<Scream> {
     );
   }
 
-  CupertinoPicker iOSPicker(List<CoinData> cryptos) {
+  CupertinoPicker iOSPicker() {
     String currency;
     List<Text> pickerList = List<Text>();
     for (String currency in currenciesList) {

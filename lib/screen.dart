@@ -6,13 +6,12 @@ import 'package:flutter/cupertino.dart';
 
 class Screen extends StatelessWidget {
   final List<CoinData> cryptos = [
-    CoinData('BTC', 'USD'),
-    CoinData('ETH', 'USD'),
-    CoinData('LTC', 'USD')
+    CoinData.withInit('BTC', 'USD'),
+    CoinData.withInit('ETH', 'USD'),
+    CoinData.withInit('LTC', 'USD')
   ];
   @override
   Widget build(BuildContext context) {
-    getConversions(cryptos);
     return Scaffold(
       appBar: AppBar(
         title: Text('🤑 Coin Ticker'),
@@ -106,11 +105,11 @@ class Screen extends StatelessWidget {
     return CupertinoPicker(
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
-      onSelectedItemChanged: (selectdIndex) {
+      onSelectedItemChanged: (selectdIndex) async {
         currency = currenciesList[selectdIndex];
         for (CoinData crypto in cryptos) {
           crypto.setCurrency(currency);
-          crypto.setConversion();
+          await crypto.setConversion();
         }
       },
       children: pickerList,

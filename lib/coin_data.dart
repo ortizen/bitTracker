@@ -8,7 +8,8 @@ class CoinData with ChangeNotifier {
   String _currency;
   String _conversion;
 
-  CoinData(String crypto, String currency) {
+  CoinData();
+  CoinData.withInit(String crypto, String currency) {
     this._crypto = crypto;
     this._currency = currency;
   }

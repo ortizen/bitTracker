@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert' as convert;
 import 'constants.dart';
-import 'coin_data.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 
@@ -11,19 +12,28 @@ class Scream extends StatefulWidget {
 }
 
 class _ScreamState extends State<Scream> {
-  final List<CoinData> cryptos = [
-    CoinData.withInit('BTC', 'USD'),
-    CoinData.withInit('ETH', 'USD'),
-    CoinData.withInit('LTC', 'USD')
-  ];
+List <String> conversion = [];
+String currency = 'USD';
+List<String> responses= [];
+ 
+Future<String> setConversion({String crypto = 'BTC', String currency = 'USD'}) async {
+    String url = api + crypto + currency;
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      setState(() {
+        var jsonResponse = convert.jsonDecode(response.body);
+        conversion = jsonResponse['last'];
+      });
+      return 'Success!';
+      
+    } else {
+      return 'Failure';
+    }
+  }
+
   @override
   void initState() {
-    super.initState();
-    getConversions().whenComplete((){
-      setState(() {
-        
-      });
-    });
+   
   }
 
   @override
@@ -40,15 +50,10 @@ class _ScreamState extends State<Scream> {
     );
   }
 
-  Future<void> getConversions() async {
-    for (CoinData crypto in cryptos) {
-      await crypto.setConversion();
-    }
-  }
-
+ 
   List<Widget> getCards() {
     List<Widget> result = [];
-    for (CoinData crypto in cryptos) {
+    for (int i = 0; i < cryptoList.length; i++) {
       result.add(
         Padding(
           padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
@@ -61,7 +66,7 @@ class _ScreamState extends State<Scream> {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
               child: Text(
-                getString(crypto),
+                responses[i],
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.white,
@@ -82,8 +87,11 @@ class _ScreamState extends State<Scream> {
     return result;
   }
 
-  String getString(CoinData crypto) {
-    return '1 ${crypto.getCrypto()} = ${crypto.getConversion()} ${crypto.getCurrency()}';
+  String getString({String currency, String crypto, String conversion}) {
+    setState(() {
+       responses.add( '1 $crypto = $conversion $currency');
+    });
+    return 'Success!';
   }
 
   DropdownButton<String> androidDropDown() {
@@ -102,18 +110,18 @@ class _ScreamState extends State<Scream> {
     return DropdownButton<String>(
       value: currency,
       items: curr,
-      onChanged: (value) {
-        currency = value;
-        for (CoinData crypto in cryptos) {
-          crypto.setCurrency(currency);
-          crypto.getConversion();
-        }
+      onChanged: (value){
+       this.currency = value;
+       for(int i = 0; i < cryptoList.length; i ++){
+        setState(() async {
+          await setConversion(currency: this.currency, crypto: cryptoList[i]);
+        }); 
+       }
       },
     );
   }
 
   CupertinoPicker iOSPicker() {
-    String currency;
     List<Text> pickerList = List<Text>();
     for (String currency in currenciesList) {
       pickerList.add(Text(currency));
@@ -121,12 +129,13 @@ class _ScreamState extends State<Scream> {
     return CupertinoPicker(
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
-      onSelectedItemChanged: (selectdIndex) async {
-        currency = currenciesList[selectdIndex];
-        for (CoinData crypto in cryptos) {
-          crypto.setCurrency(currency);
-          await crypto.setConversion();
-        }
+      onSelectedItemChanged: (selectdIndex) {
+        this.currency = currenciesList[selectdIndex];
+        for(int i = 0; i < cryptoList.length; i++){
+setState(()async {
+         await setConversion(currency: this.currency, crypto: cryptoList[i]);
+       });
+        } 
       },
       children: pickerList,
     );

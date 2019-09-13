@@ -33,7 +33,10 @@ Future<String> setConversion({String crypto = 'BTC', String currency = 'USD'}) a
 
   @override
   void initState() {
-   
+    super.initState();
+    for(int i = 0; i< cryptoList.length; i++){
+this.setConversion(crypto: cryptoList[i], currency: this.currency);
+    }
   }
 
   @override

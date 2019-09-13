@@ -19,7 +19,11 @@ class _ScreamState extends State<Scream> {
   @override
   void initState() {
     super.initState();
-    getConversions();
+    getConversions().whenComplete((){
+      setState(() {
+        
+      });
+    });
   }
 
   @override
